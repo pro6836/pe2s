@@ -1,0 +1,36 @@
+@name String Storer
+@inputs In:string Write Read Passcode:string ConvId:string
+@outputs Out:string Status:string
+@persist IsRead PrepUrl:string
+
+if (Write == 1) {
+    PrepUrl = "http://blokitstudios.com/gmod/cross_srv_msg.php?convid=" + httpUrlEncode(ConvId) + "&passcode=" + httpUrlEncode(Passcode) + "&postval=" + httpUrlEncode(In)
+    httpRequest(PrepUrl)
+    IsRead = 0
+    runOnHTTP(1)
+}
+if (Read == 1) {
+    httpRequest("http://blokitstudios.com/gmod/cross_srv_msg.php?convid=" + httpUrlEncode(ConvId) + "&passcode=" + httpUrlEncode(Passcode))
+    IsRead = 1
+    runOnHTTP(1)
+}
+if (httpClk()) {
+    if (httpData() == "403") {
+        Status = "403"
+        runOnHTTP(0)
+    }
+    elseif (IsRead == 0) {
+        Status = "200"
+        runOnHTTP(0)
+    }
+    elseif (IsRead == 1) {
+        if (httpData() == "") {
+            Status = "201"
+        }
+        else {
+            Status = "200"
+            Out = httpData()
+        }
+        runOnHTTP(0)
+    }
+}
